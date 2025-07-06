@@ -290,15 +290,9 @@ function Shouter:RegisterSlashCommands()
             print("|cFF00FF00Shouter:|r Cleared all tracked players.")
         elseif command == "config" or command == "settings" then
             if self.settingsPanel then
-                -- Try multiple ways to open the settings
-                if InterfaceOptionsFrame then
-                    InterfaceOptionsFrame_OpenToCategory(self.settingsPanel)
-                    InterfaceOptionsFrame_OpenToCategory(self.settingsPanel) -- Called twice to fix a Blizzard bug
-                else
-                    -- Fallback: show the panel directly
-                    self.settingsPanel:Show()
-                    print("|cFF00FF00Shouter:|r Settings panel opened directly.")
-                end
+                -- For Classic WoW, show the panel directly
+                self.settingsPanel:Show()
+                print("|cFF00FF00Shouter:|r Settings panel opened.")
             else
                 print("|cFF00FF00Shouter:|r Settings panel not loaded yet. Try again in a moment.")
                 -- Try to force load it

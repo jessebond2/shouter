@@ -188,8 +188,10 @@ function ShouterCreateSettingsPanel()
         panel:RefreshPlayerList()
     end
     
-    -- Add to Interface Options
-    InterfaceOptions_AddCategory(panel)
+    -- Add to Interface Options (Classic compatible)
+    if InterfaceOptions_AddCategory then
+        InterfaceOptions_AddCategory(panel)
+    end
     
     return panel
 end
