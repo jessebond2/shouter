@@ -1,13 +1,20 @@
 local addonName, addon = ...
 local Shouter = addon
 
--- Debug log storage
-Shouter.debugLog = {}
-Shouter.debugEnabled = false
 local maxLogEntries = 500
 
-function Shouter:DebugLog(message, category)
-    if not self.debugEnabled then return end
+function ShouterDebugLog(self, message, category)
+    local Shouter = _G.Shouter
+    if not Shouter then return end
+    
+    -- Initialize debug storage if needed
+    if not Shouter.debugLog then
+        Shouter.debugLog = {}
+    end
+    if Shouter.debugEnabled == nil then
+        Shouter.debugEnabled = false
+    end
+    if not Shouter.debugEnabled then return end
     
     local timestamp = date("%H:%M:%S")
     local entry = {
@@ -16,20 +23,25 @@ function Shouter:DebugLog(message, category)
         message = message
     }
     
-    table.insert(self.debugLog, 1, entry)
+    table.insert(Shouter.debugLog, 1, entry)
     
     -- Limit log size
-    while #self.debugLog > maxLogEntries do
-        table.remove(self.debugLog)
+    while #Shouter.debugLog > maxLogEntries do
+        table.remove(Shouter.debugLog)
     end
     
     -- Update debug panel if visible
-    if self.debugPanel and self.debugPanel:IsVisible() then
-        self.debugPanel:RefreshLog()
+    if Shouter.debugPanel and Shouter.debugPanel:IsVisible() then
+        Shouter.debugPanel:RefreshLog()
     end
 end
 
-local function CreateDebugPanel()
+function ShouterCreateDebugPanel()
+    local Shouter = _G.Shouter
+    if not Shouter then
+        print("|cFFFF0000[Shouter Debug]|r Error: Shouter not initialized")
+        return nil
+    end
     local panel = CreateFrame("Frame", "ShouterDebugPanel", UIParent)
     panel.name = "Debug"
     panel.parent = "Shouter"
@@ -226,7 +238,10 @@ local function CreateDebugPanel()
 end
 
 -- Hook into main addon functions for debugging
-local function HookDebugFunctions()
+function ShouterHookDebugFunctions()
+    local Shouter = _G.Shouter
+    if not Shouter then return end
+    
     local originalScan = Shouter.ScanForPlayers
     Shouter.ScanForPlayers = function(self)
         self:DebugLog("Starting player scan", "Scan")
@@ -252,28 +267,7 @@ local function HookDebugFunctions()
     end
 end
 
--- Initialize debug panel after addon loads
-local debugFrame = CreateFrame("Frame")
-debugFrame:RegisterEvent("ADDON_LOADED")
-debugFrame:SetScript("OnEvent", function(self, event, loadedAddon)
-    if event == "ADDON_LOADED" and loadedAddon == addonName then
-        print("|cFFFF0000[Shouter Debug]|r Addon loaded event fired")
-        C_Timer.After(0.2, function()
-            print("|cFFFF0000[Shouter Debug]|r Attempting to create debug panel...")
-            -- Restore debug state
-            if Shouter.db and Shouter.db.debugEnabled ~= nil then
-                Shouter.debugEnabled = Shouter.db.debugEnabled
-            end
-            
-            local panel = CreateDebugPanel()
-            if panel then
-                Shouter.debugPanel = panel
-                HookDebugFunctions()
-                print("|cFFFF0000[Shouter Debug]|r Debug panel created successfully!")
-                Shouter:DebugLog("Shouter addon loaded", "System")
-            else
-                print("|cFFFF0000[Shouter Debug]|r Debug panel creation failed!")
-            end
-        end)
-    end
-end)
+_G.ShouterHookDebugFunctions = ShouterHookDebugFunctions
+
+-- Make the function globally accessible
+_G.ShouterCreateDebugPanel = ShouterCreateDebugPanel

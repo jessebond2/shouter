@@ -2,6 +2,11 @@ local addonName, addon = ...
 Shouter = addon
 _G.Shouter = addon  -- Make it globally accessible
 
+-- Add debug logging method
+function Shouter:DebugLog(message, category)
+    return ShouterDebugLog(self, message, category)
+end
+
 local defaults = {
     enabled = true,
     range = 30,
@@ -30,12 +35,41 @@ function Shouter:OnInitialize()
     
     print("|cFF00FF00Shouter|r loaded. Type /shouter for help.")
     
-    -- Ensure settings panel loads
+    -- Initialize panels after a short delay
     C_Timer.After(0.5, function()
-        if not self.settingsPanel then
-            print("|cFF00FF00Shouter:|r Loading settings panel...")
-        end
+        self:InitializePanels()
     end)
+end
+
+function Shouter:InitializePanels()
+    -- Load settings panel
+    if not self.settingsPanel then
+        print("|cFF00FF00Shouter:|r Loading settings panel...")
+        local CreateSettingsPanel = _G.ShouterCreateSettingsPanel
+        if CreateSettingsPanel then
+            self.settingsPanel = CreateSettingsPanel()
+            if self.settingsPanel then
+                print("|cFF00FF00Shouter:|r Settings panel loaded successfully!")
+            end
+        end
+    end
+    
+    -- Load debug panel
+    if not self.debugPanel then
+        local CreateDebugPanel = _G.ShouterCreateDebugPanel
+        if CreateDebugPanel then
+            self.debugPanel = CreateDebugPanel()
+            if self.debugPanel then
+                print("|cFF00FF00Shouter:|r Debug panel loaded successfully!")
+                -- Hook debug functions
+                local HookDebugFunctions = _G.ShouterHookDebugFunctions
+                if HookDebugFunctions then
+                    HookDebugFunctions()
+                end
+                self:DebugLog("Shouter addon loaded", "System")
+            end
+        end
+    end
 end
 
 function Shouter:Enable()

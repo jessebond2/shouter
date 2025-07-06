@@ -1,10 +1,11 @@
 local addonName, addon = ...
 local Shouter = addon
-print("|cFFFF0000[Shouter Settings]|r Loading... addonName = " .. tostring(addonName))
 
-local function CreateSettingsPanel()
-    -- Ensure Shouter is initialized
+function ShouterCreateSettingsPanel()
+    -- Get the global Shouter reference
+    local Shouter = _G.Shouter
     if not Shouter or not Shouter.db then
+        print("|cFFFF0000[Shouter Settings]|r Error: Shouter not initialized")
         return nil
     end
     
@@ -193,32 +194,5 @@ local function CreateSettingsPanel()
     return panel
 end
 
--- Initialize settings after addon loads
-local settingsFrame = CreateFrame("Frame")
-settingsFrame:RegisterEvent("ADDON_LOADED")
-settingsFrame:SetScript("OnEvent", function(self, event, loadedAddon)
-    if event == "ADDON_LOADED" and loadedAddon == addonName then
-        print("|cFFFF0000[Shouter Settings]|r Addon loaded event fired")
-        -- Wait a bit longer to ensure Shouter is fully initialized
-        C_Timer.After(0.1, function()
-            print("|cFFFF0000[Shouter Settings]|r Attempting to create panel...")
-            local panel = CreateSettingsPanel()
-            if panel then
-                Shouter.settingsPanel = panel
-                print("|cFFFF0000[Shouter Settings]|r Panel created successfully!")
-            else
-                print("|cFFFF0000[Shouter Settings]|r Panel creation failed, retrying...")
-                -- Retry if initialization failed
-                C_Timer.After(0.5, function()
-                    local retryPanel = CreateSettingsPanel()
-                    if retryPanel then
-                        Shouter.settingsPanel = retryPanel
-                        print("|cFFFF0000[Shouter Settings]|r Panel created on retry!")
-                    else
-                        print("|cFFFF0000[Shouter Settings]|r Panel creation failed on retry!")
-                    end
-                end)
-            end
-        end)
-    end
-end)
+-- Make the function globally accessible
+_G.ShouterCreateSettingsPanel = ShouterCreateSettingsPanel
