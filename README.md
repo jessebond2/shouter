@@ -93,3 +93,7 @@ To add new addons to this repository:
 2. Include a `.toc` file with proper metadata
 3. Follow WoW Classic API guidelines
 4. Update this README with your addon's information
+
+#### Build / Packaging
+
+`zip -r Shouter-vX.Y.Z.zip Shouter -x "__MACOSX" "*.DS_Store"`
