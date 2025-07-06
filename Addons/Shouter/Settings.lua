@@ -1,6 +1,11 @@
 local addonName, addon = ...
 
 local function CreateSettingsPanel()
+    -- Ensure Shouter is initialized
+    if not Shouter or not Shouter.db then
+        return nil
+    end
+    
     local panel = CreateFrame("Frame", "ShouterSettingsPanel", UIParent)
     panel.name = "Shouter"
     
@@ -191,9 +196,17 @@ local settingsFrame = CreateFrame("Frame")
 settingsFrame:RegisterEvent("ADDON_LOADED")
 settingsFrame:SetScript("OnEvent", function(self, event, ...)
     if event == "ADDON_LOADED" and ... == addonName then
-        -- Wait a frame to ensure Shouter is initialized
-        C_Timer.After(0, function()
-            Shouter.settingsPanel = CreateSettingsPanel()
+        -- Wait a bit longer to ensure Shouter is fully initialized
+        C_Timer.After(0.1, function()
+            local panel = CreateSettingsPanel()
+            if panel then
+                Shouter.settingsPanel = panel
+            else
+                -- Retry if initialization failed
+                C_Timer.After(0.5, function()
+                    Shouter.settingsPanel = CreateSettingsPanel()
+                end)
+            end
         end)
     end
 end)

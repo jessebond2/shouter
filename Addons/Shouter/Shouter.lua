@@ -28,6 +28,13 @@ function Shouter:OnInitialize()
     end
     
     print("|cFF00FF00Shouter|r loaded. Type /shouter for help.")
+    
+    -- Ensure settings panel loads
+    C_Timer.After(0.5, function()
+        if not self.settingsPanel then
+            print("|cFF00FF00Shouter:|r Loading settings panel...")
+        end
+    end)
 end
 
 function Shouter:Enable()
@@ -99,7 +106,7 @@ end
 function Shouter:YellForPlayer(name, distance)
     local message = string.format("%s!", name)
     SendChatMessage(message, self.db.messageType)
-    print("|cFF00FF00Shouter:|r " .. message .. "(%.1f yards away) (" .. string.lower(self.db.messageType) .. ")", distance)
+    print(string.format("|cFF00FF00Shouter:|r %s (%.1f yards away) (%s)", message, distance, string.lower(self.db.messageType)))
 end
 
 function Shouter:AddPlayer(name)
@@ -171,8 +178,18 @@ function Shouter:RegisterSlashCommands()
             self.db.players = {}
             print("|cFF00FF00Shouter:|r Cleared all tracked players.")
         elseif command == "config" or command == "settings" then
-            InterfaceOptionsFrame_OpenToCategory("Shouter")
-            InterfaceOptionsFrame_OpenToCategory("Shouter") -- Called twice to fix a Blizzard bug
+            if self.settingsPanel then
+                InterfaceOptionsFrame_OpenToCategory("Shouter")
+                InterfaceOptionsFrame_OpenToCategory("Shouter") -- Called twice to fix a Blizzard bug
+            else
+                print("|cFF00FF00Shouter:|r Settings panel not loaded yet. Try again in a moment.")
+            end
+        elseif command == "debug" then
+            print("|cFF00FF00Shouter:|r Debug info:")
+            print("  - Addon loaded: " .. (self.db and "yes" or "no"))
+            print("  - Settings panel: " .. (self.settingsPanel and "loaded" or "not loaded"))
+            print("  - Debug panel: " .. (self.debugPanel and "loaded" or "not loaded"))
+            print("  - Message type: " .. (self.db and self.db.messageType or "unknown"))
         else
             print("|cFF00FF00Shouter|r Commands:")
             print("  /shouter add <name> - Add a player to track")
@@ -191,8 +208,16 @@ end
 
 local frame = CreateFrame("Frame")
 frame:RegisterEvent("ADDON_LOADED")
+frame:RegisterEvent("PLAYER_LOGIN")
 frame:SetScript("OnEvent", function(self, event, ...)
     if event == "ADDON_LOADED" and ... == addonName then
         Shouter:OnInitialize()
+    elseif event == "PLAYER_LOGIN" then
+        -- Ensure settings are fully loaded after login
+        C_Timer.After(1, function()
+            if Shouter.settingsPanel and Shouter.settingsPanel.refresh then
+                Shouter.settingsPanel.refresh()
+            end
+        end)
     end
 end)
