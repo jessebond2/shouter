@@ -314,6 +314,22 @@ function Shouter:RegisterSlashCommands()
             print("  - Settings panel: " .. (self.settingsPanel and "loaded" or "not loaded"))
             print("  - Debug panel: " .. (self.debugPanel and "loaded" or "not loaded"))
             print("  - Message type: " .. (self.db and self.db.messageType or "unknown"))
+            print("  - CreateSettingsPanel function: " .. (_G.ShouterCreateSettingsPanel and "found" or "missing"))
+            print("  - CreateDebugPanel function: " .. (_G.ShouterCreateDebugPanel and "found" or "missing"))
+            if self.settingsPanel then
+                print("  - Settings panel visible: " .. (self.settingsPanel:IsVisible() and "yes" or "no"))
+                print("  - Settings panel type: " .. type(self.settingsPanel))
+            end
+        elseif command == "force" then
+            if self.settingsPanel then
+                print("|cFF00FF00Shouter:|r Force showing settings panel...")
+                self.settingsPanel:SetAlpha(1)
+                self.settingsPanel:Show()
+                self.settingsPanel:Raise()
+                print("|cFF00FF00Shouter:|r Panel should be visible now.")
+            else
+                print("|cFF00FF00Shouter:|r No settings panel to show.")
+            end
         else
             print("|cFF00FF00Shouter|r Commands:")
             print("  /shouter add <name> - Add a player to track")
@@ -327,6 +343,8 @@ function Shouter:RegisterSlashCommands()
             print("  /shouter clear - Remove all tracked players")
             print("  /shouter config - Open settings panel")
             print("  /shouter show - Show settings panel directly")
+            print("  /shouter force - Force show settings panel")
+            print("  /shouter debug - Show debug information")
         end
     end
 end
