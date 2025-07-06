@@ -214,10 +214,27 @@ function Shouter:RegisterSlashCommands()
             print("|cFF00FF00Shouter:|r Cleared all tracked players.")
         elseif command == "config" or command == "settings" then
             if self.settingsPanel then
-                InterfaceOptionsFrame_OpenToCategory("Shouter")
-                InterfaceOptionsFrame_OpenToCategory("Shouter") -- Called twice to fix a Blizzard bug
+                -- Try multiple ways to open the settings
+                if InterfaceOptionsFrame then
+                    InterfaceOptionsFrame_OpenToCategory(self.settingsPanel)
+                    InterfaceOptionsFrame_OpenToCategory(self.settingsPanel) -- Called twice to fix a Blizzard bug
+                else
+                    -- Fallback: show the panel directly
+                    self.settingsPanel:Show()
+                    print("|cFF00FF00Shouter:|r Settings panel opened directly.")
+                end
             else
                 print("|cFF00FF00Shouter:|r Settings panel not loaded yet. Try again in a moment.")
+                -- Try to force load it
+                self:InitializePanels()
+            end
+        elseif command == "show" then
+            if self.settingsPanel then
+                self.settingsPanel:Show()
+                print("|cFF00FF00Shouter:|r Settings panel shown.")
+            else
+                print("|cFF00FF00Shouter:|r Settings panel not loaded.")
+                self:InitializePanels()
             end
         elseif command == "debug" then
             print("|cFF00FF00Shouter:|r Debug info:")
@@ -237,6 +254,7 @@ function Shouter:RegisterSlashCommands()
             print("  /shouter disable - Disable the addon")
             print("  /shouter clear - Remove all tracked players")
             print("  /shouter config - Open settings panel")
+            print("  /shouter show - Show settings panel directly")
         end
     end
 end
