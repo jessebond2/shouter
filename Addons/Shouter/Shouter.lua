@@ -75,16 +75,26 @@ function Shouter:ScanForPlayers()
 end
 
 function Shouter:GetDistanceToUnit(unit)
-    local y1, x1, _, instance1 = UnitPosition("player")
-    local y2, x2, _, instance2 = UnitPosition(unit)
-    
-    if not (x1 and x2 and instance1 == instance2) then
+    -- UnitPosition doesn't work reliably in Classic, use CheckInteractDistance instead
+    if not UnitExists(unit) or UnitIsDeadOrGhost(unit) then
         return nil
     end
     
-    local dx = x2 - x1
-    local dy = y2 - y1
-    return math.sqrt(dx * dx + dy * dy)
+    -- CheckInteractDistance ranges in Classic:
+    -- 1 = Inspect (28 yards)
+    -- 2 = Trade (11.11 yards) 
+    -- 3 = Duel (9.9 yards)
+    -- 4 = Follow (28 yards)
+    
+    if CheckInteractDistance(unit, 3) then
+        return 8   -- Very close (within ~10 yards)
+    elseif CheckInteractDistance(unit, 2) then
+        return 11  -- Close (within ~11 yards)
+    elseif CheckInteractDistance(unit, 1) or CheckInteractDistance(unit, 4) then
+        return 25  -- Medium range (within ~28 yards)
+    else
+        return 40  -- Far away (assume 40+ yards)
+    end
 end
 
 function Shouter:IsPlayerTracked(name)
@@ -138,6 +148,7 @@ end
 function Shouter:TestRange()
     print("|cFF00FF00Shouter:|r Testing range detection...")
     print("|cFF00FF00Shouter:|r Current settings: " .. self.db.range .. " yards, " .. string.lower(self.db.messageType) .. " messages")
+    print("|cFF00FF00Shouter:|r Note: Using approximate distances (Classic doesn't support exact positioning)")
     
     if #self.db.players == 0 then
         print("|cFF00FF00Shouter:|r No players are being tracked. Add some with /shouter add <name>")
@@ -159,12 +170,12 @@ function Shouter:TestRange()
                     if self:IsPlayerTracked(name) then
                         foundPlayers = foundPlayers + 1
                         if distance <= self.db.range then
-                            print("|cFFFF0000Shouter:|r WOULD ALERT: " .. name .. " is " .. string.format("%.1f", distance) .. " yards away!")
+                            print("|cFFFF0000Shouter:|r WOULD ALERT: " .. name .. " is ~" .. distance .. " yards away!")
                         else
-                            print("|cFFFFFF00Shouter:|r " .. name .. " is " .. string.format("%.1f", distance) .. " yards away (outside range)")
+                            print("|cFFFFFF00Shouter:|r " .. name .. " is ~" .. distance .. " yards away (outside range)")
                         end
                     else
-                        print("|cFF888888Shouter:|r " .. name .. " is " .. string.format("%.1f", distance) .. " yards away (not tracked)")
+                        print("|cFF888888Shouter:|r " .. name .. " is ~" .. distance .. " yards away (not tracked)")
                     end
                 else
                     if self:IsPlayerTracked(name) then
@@ -187,12 +198,12 @@ function Shouter:TestRange()
                     if self:IsPlayerTracked(name) then
                         foundPlayers = foundPlayers + 1
                         if distance <= self.db.range then
-                            print("|cFFFF0000Shouter:|r WOULD ALERT: " .. name .. " is " .. string.format("%.1f", distance) .. " yards away!")
+                            print("|cFFFF0000Shouter:|r WOULD ALERT: " .. name .. " is ~" .. distance .. " yards away!")
                         else
-                            print("|cFFFFFF00Shouter:|r " .. name .. " is " .. string.format("%.1f", distance) .. " yards away (outside range)")
+                            print("|cFFFFFF00Shouter:|r " .. name .. " is ~" .. distance .. " yards away (outside range)")
                         end
                     else
-                        print("|cFF888888Shouter:|r " .. name .. " is " .. string.format("%.1f", distance) .. " yards away (not tracked)")
+                        print("|cFF888888Shouter:|r " .. name .. " is ~" .. distance .. " yards away (not tracked)")
                     end
                 else
                     if self:IsPlayerTracked(name) then
