@@ -1,4 +1,4 @@
-## Interface: 11503
+## Interface: 11504
 ## Title: Shouter
 ## Notes: Yells when specified players get within a certain distance
 ## Author: Your Name

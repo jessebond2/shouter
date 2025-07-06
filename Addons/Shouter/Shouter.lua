@@ -210,6 +210,38 @@ function Shouter:TestRange()
     end
 end
 
+function Shouter:TestRangeDebug()
+    print("|cFF00FF00Shouter:|r Debug test - checking UnitPosition function...")
+    
+    -- Test UnitPosition function
+    if UnitPosition then
+        local y1, x1, _, instance1 = UnitPosition("player")
+        print("|cFF00FF00Shouter:|r Player position: x=" .. tostring(x1) .. ", y=" .. tostring(y1) .. ", instance=" .. tostring(instance1))
+    else
+        print("|cFFFF0000Shouter:|r UnitPosition function not available!")
+        return
+    end
+    
+    -- Check a party member
+    for i = 1, 4 do
+        local unit = "party" .. i
+        if UnitExists(unit) then
+            local name = UnitName(unit)
+            print("|cFF00FF00Shouter:|r Found party member: " .. tostring(name))
+            local y2, x2, _, instance2 = UnitPosition(unit)
+            print("|cFF00FF00Shouter:|r  Position: x=" .. tostring(x2) .. ", y=" .. tostring(y2) .. ", instance=" .. tostring(instance2))
+            
+            if x2 and y2 then
+                local distance = self:GetDistanceToUnit(unit)
+                print("|cFF00FF00Shouter:|r  Distance: " .. tostring(distance))
+            else
+                print("|cFFFF0000Shouter:|r  Could not get position!")
+            end
+            break
+        end
+    end
+end
+
 function Shouter:RegisterSlashCommands()
     SLASH_SHOUTER1 = "/shouter"
     SLASH_SHOUTER2 = "/shout"
@@ -247,6 +279,8 @@ function Shouter:RegisterSlashCommands()
             print("|cFF00FF00Shouter:|r Cleared all tracked players.")
         elseif command == "test" then
             self:TestRange()
+        elseif command == "testdebug" then
+            self:TestRangeDebug()
         else
             print("|cFF00FF00Shouter|r Commands:")
             print("  /shouter add <name> - Add a player to track")
