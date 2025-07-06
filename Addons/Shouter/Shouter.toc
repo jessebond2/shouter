@@ -6,5 +6,3 @@
 ## SavedVariables: ShouterDB
 
 Shouter.lua
-Settings.lua
-Debug.lua

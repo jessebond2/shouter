@@ -13,8 +13,6 @@ Shouter is a WoW Classic addon that automatically yells when specified players g
 - Cooldown system to prevent spam (default: 60 seconds per player)
 - Choose between "yell" or "say" for messages
 - Simple slash commands for configuration
-- Settings panel with GUI controls
-- Debug panel for troubleshooting
 - Persistent settings saved between sessions
 
 ### Installation
@@ -68,7 +66,7 @@ If the addon doesn't appear in your addon list:
 - `/shouter enable` - Enable the addon
 - `/shouter disable` - Disable the addon
 - `/shouter clear` - Remove all tracked players
-- `/shouter config` - Open the settings panel
+- `/shouter test` - Test range detection (shows who's nearby without alerting)
 
 #### Examples
 
@@ -78,6 +76,7 @@ If the addon doesn't appear in your addon list:
 /shouter range 40
 /shouter cooldown 30
 /shouter messagetype say
+/shouter test
 ```
 
 ### How It Works

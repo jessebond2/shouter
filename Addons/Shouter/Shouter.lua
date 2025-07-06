@@ -1,11 +1,5 @@
 local addonName, addon = ...
 Shouter = addon
-_G.Shouter = addon  -- Make it globally accessible
-
--- Add debug logging method
-function Shouter:DebugLog(message, category)
-    return ShouterDebugLog(self, message, category)
-end
 
 local defaults = {
     enabled = true,
@@ -34,120 +28,6 @@ function Shouter:OnInitialize()
     end
     
     print("|cFF00FF00Shouter|r loaded. Type /shouter for help.")
-    
-    -- Initialize panels after a short delay
-    C_Timer.After(0.5, function()
-        self:InitializePanels()
-    end)
-end
-
-function Shouter:InitializePanels()
-    -- Load settings panel
-    if not self.settingsPanel then
-        print("|cFF00FF00Shouter:|r Loading settings panel...")
-        local CreateSettingsPanel = _G.ShouterCreateSettingsPanel
-        if CreateSettingsPanel then
-            print("|cFF00FF00Shouter:|r Calling CreateSettingsPanel...")
-            local success, result = pcall(CreateSettingsPanel)
-            if success and result then
-                self.settingsPanel = result
-                print("|cFF00FF00Shouter:|r Settings panel loaded successfully!")
-            else
-                print("|cFF00FF00Shouter:|r Settings panel creation failed: " .. tostring(result))
-                -- Try creating a simple test panel
-                self:CreateSimpleSettingsPanel()
-            end
-        else
-            print("|cFF00FF00Shouter:|r CreateSettingsPanel function not found!")
-        end
-    end
-    
-    -- Load debug panel
-    if not self.debugPanel then
-        local CreateDebugPanel = _G.ShouterCreateDebugPanel
-        if CreateDebugPanel then
-            local success, result = pcall(CreateDebugPanel)
-            if success and result then
-                self.debugPanel = result
-                print("|cFF00FF00Shouter:|r Debug panel loaded successfully!")
-                -- Hook debug functions
-                local HookDebugFunctions = _G.ShouterHookDebugFunctions
-                if HookDebugFunctions then
-                    HookDebugFunctions()
-                end
-                self:DebugLog("Shouter addon loaded", "System")
-            else
-                print("|cFF00FF00Shouter:|r Debug panel creation failed: " .. tostring(result))
-            end
-        else
-            print("|cFF00FF00Shouter:|r CreateDebugPanel function not found!")
-        end
-    end
-end
-
-function Shouter:CreateSimpleSettingsPanel()
-    print("|cFF00FF00Shouter:|r Creating simple settings panel...")
-    local panel = CreateFrame("Frame", "ShouterSimpleSettings", UIParent, "BackdropTemplate")
-    panel:SetSize(400, 300)
-    panel:SetPoint("CENTER")
-    if panel.SetBackdrop then
-        panel:SetBackdrop({
-            bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
-            edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
-            tile = true, tileSize = 32, edgeSize = 32,
-            insets = { left = 11, right = 12, top = 12, bottom = 11 }
-        })
-    end
-    panel:SetFrameStrata("DIALOG")
-    panel:Hide()
-    
-    -- Title
-    local title = panel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
-    title:SetPoint("TOP", 0, -20)
-    title:SetText("Shouter Settings")
-    
-    -- Enable checkbox
-    local enableCheckbox = CreateFrame("CheckButton", nil, panel, "ChatConfigCheckButtonTemplate")
-    enableCheckbox:SetPoint("TOPLEFT", 20, -50)
-    enableCheckbox.Text:SetText("Enable Shouter")
-    enableCheckbox:SetChecked(self.db.enabled)
-    enableCheckbox:SetScript("OnClick", function(cb)
-        if cb:GetChecked() then
-            self:Enable()
-        else
-            self:Disable()
-        end
-    end)
-    
-    -- Message type buttons
-    local yellButton = CreateFrame("Button", nil, panel, "UIPanelButtonTemplate")
-    yellButton:SetPoint("TOPLEFT", enableCheckbox, "BOTTOMLEFT", 0, -30)
-    yellButton:SetSize(80, 22)
-    yellButton:SetText("Use YELL")
-    yellButton:SetScript("OnClick", function()
-        self.db.messageType = "YELL"
-        print("|cFF00FF00Shouter:|r Message type set to yell")
-    end)
-    
-    local sayButton = CreateFrame("Button", nil, panel, "UIPanelButtonTemplate")
-    sayButton:SetPoint("LEFT", yellButton, "RIGHT", 10, 0)
-    sayButton:SetSize(80, 22)
-    sayButton:SetText("Use SAY")
-    sayButton:SetScript("OnClick", function()
-        self.db.messageType = "SAY"
-        print("|cFF00FF00Shouter:|r Message type set to say")
-    end)
-    
-    -- Close button
-    local closeButton = CreateFrame("Button", nil, panel, "UIPanelButtonTemplate")
-    closeButton:SetPoint("BOTTOM", 0, 20)
-    closeButton:SetSize(80, 22)
-    closeButton:SetText("Close")
-    closeButton:SetScript("OnClick", function() panel:Hide() end)
-    
-    self.settingsPanel = panel
-    print("|cFF00FF00Shouter:|r Simple settings panel created!")
-    return panel
 end
 
 function Shouter:Enable()
@@ -255,6 +135,81 @@ function Shouter:ListPlayers()
     end
 end
 
+function Shouter:TestRange()
+    print("|cFF00FF00Shouter:|r Testing range detection...")
+    print("|cFF00FF00Shouter:|r Current settings: " .. self.db.range .. " yards, " .. string.lower(self.db.messageType) .. " messages")
+    
+    if #self.db.players == 0 then
+        print("|cFF00FF00Shouter:|r No players are being tracked. Add some with /shouter add <name>")
+        return
+    end
+    
+    local foundPlayers = 0
+    local nearbyPlayers = 0
+    
+    -- Check party members
+    for i = 1, 4 do
+        local unit = "party" .. i
+        if UnitExists(unit) then
+            local name = UnitName(unit)
+            if name then
+                local distance = self:GetDistanceToUnit(unit)
+                if distance then
+                    nearbyPlayers = nearbyPlayers + 1
+                    if self:IsPlayerTracked(name) then
+                        foundPlayers = foundPlayers + 1
+                        if distance <= self.db.range then
+                            print("|cFFFF0000Shouter:|r WOULD ALERT: " .. name .. " is " .. string.format("%.1f", distance) .. " yards away!")
+                        else
+                            print("|cFFFFFF00Shouter:|r " .. name .. " is " .. string.format("%.1f", distance) .. " yards away (outside range)")
+                        end
+                    else
+                        print("|cFF888888Shouter:|r " .. name .. " is " .. string.format("%.1f", distance) .. " yards away (not tracked)")
+                    end
+                else
+                    if self:IsPlayerTracked(name) then
+                        print("|cFFFFFF00Shouter:|r " .. name .. " is in party but distance unknown")
+                    end
+                end
+            end
+        end
+    end
+    
+    -- Check raid members
+    for i = 1, 40 do
+        local unit = "raid" .. i
+        if UnitExists(unit) then
+            local name = UnitName(unit)
+            if name then
+                local distance = self:GetDistanceToUnit(unit)
+                if distance then
+                    nearbyPlayers = nearbyPlayers + 1
+                    if self:IsPlayerTracked(name) then
+                        foundPlayers = foundPlayers + 1
+                        if distance <= self.db.range then
+                            print("|cFFFF0000Shouter:|r WOULD ALERT: " .. name .. " is " .. string.format("%.1f", distance) .. " yards away!")
+                        else
+                            print("|cFFFFFF00Shouter:|r " .. name .. " is " .. string.format("%.1f", distance) .. " yards away (outside range)")
+                        end
+                    else
+                        print("|cFF888888Shouter:|r " .. name .. " is " .. string.format("%.1f", distance) .. " yards away (not tracked)")
+                    end
+                else
+                    if self:IsPlayerTracked(name) then
+                        print("|cFFFFFF00Shouter:|r " .. name .. " is in raid but distance unknown")
+                    end
+                end
+            end
+        end
+    end
+    
+    print("|cFF00FF00Shouter:|r Test complete. Found " .. nearbyPlayers .. " nearby players, " .. foundPlayers .. " are tracked.")
+    
+    if nearbyPlayers == 0 then
+        print("|cFF00FF00Shouter:|r No party/raid members found. Make sure you're in a group to test!")
+    end
+end
+
 function Shouter:RegisterSlashCommands()
     SLASH_SHOUTER1 = "/shouter"
     SLASH_SHOUTER2 = "/shout"
@@ -290,46 +245,8 @@ function Shouter:RegisterSlashCommands()
         elseif command == "clear" then
             self.db.players = {}
             print("|cFF00FF00Shouter:|r Cleared all tracked players.")
-        elseif command == "config" or command == "settings" then
-            if self.settingsPanel then
-                -- For Classic WoW, show the panel directly
-                self.settingsPanel:Show()
-                print("|cFF00FF00Shouter:|r Settings panel opened.")
-            else
-                print("|cFF00FF00Shouter:|r Settings panel not loaded yet. Try again in a moment.")
-                -- Try to force load it
-                self:InitializePanels()
-            end
-        elseif command == "show" then
-            if self.settingsPanel then
-                self.settingsPanel:Show()
-                print("|cFF00FF00Shouter:|r Settings panel shown.")
-            else
-                print("|cFF00FF00Shouter:|r Settings panel not loaded.")
-                self:InitializePanels()
-            end
-        elseif command == "debug" then
-            print("|cFF00FF00Shouter:|r Debug info:")
-            print("  - Addon loaded: " .. (self.db and "yes" or "no"))
-            print("  - Settings panel: " .. (self.settingsPanel and "loaded" or "not loaded"))
-            print("  - Debug panel: " .. (self.debugPanel and "loaded" or "not loaded"))
-            print("  - Message type: " .. (self.db and self.db.messageType or "unknown"))
-            print("  - CreateSettingsPanel function: " .. (_G.ShouterCreateSettingsPanel and "found" or "missing"))
-            print("  - CreateDebugPanel function: " .. (_G.ShouterCreateDebugPanel and "found" or "missing"))
-            if self.settingsPanel then
-                print("  - Settings panel visible: " .. (self.settingsPanel:IsVisible() and "yes" or "no"))
-                print("  - Settings panel type: " .. type(self.settingsPanel))
-            end
-        elseif command == "force" then
-            if self.settingsPanel then
-                print("|cFF00FF00Shouter:|r Force showing settings panel...")
-                self.settingsPanel:SetAlpha(1)
-                self.settingsPanel:Show()
-                self.settingsPanel:Raise()
-                print("|cFF00FF00Shouter:|r Panel should be visible now.")
-            else
-                print("|cFF00FF00Shouter:|r No settings panel to show.")
-            end
+        elseif command == "test" then
+            self:TestRange()
         else
             print("|cFF00FF00Shouter|r Commands:")
             print("  /shouter add <name> - Add a player to track")
@@ -341,26 +258,15 @@ function Shouter:RegisterSlashCommands()
             print("  /shouter enable - Enable the addon")
             print("  /shouter disable - Disable the addon")
             print("  /shouter clear - Remove all tracked players")
-            print("  /shouter config - Open settings panel")
-            print("  /shouter show - Show settings panel directly")
-            print("  /shouter force - Force show settings panel")
-            print("  /shouter debug - Show debug information")
+            print("  /shouter test - Test range detection (shows who's nearby)")
         end
     end
 end
 
 local frame = CreateFrame("Frame")
 frame:RegisterEvent("ADDON_LOADED")
-frame:RegisterEvent("PLAYER_LOGIN")
 frame:SetScript("OnEvent", function(self, event, ...)
     if event == "ADDON_LOADED" and ... == addonName then
         Shouter:OnInitialize()
-    elseif event == "PLAYER_LOGIN" then
-        -- Ensure settings are fully loaded after login
-        C_Timer.After(1, function()
-            if Shouter.settingsPanel and Shouter.settingsPanel.refresh then
-                Shouter.settingsPanel.refresh()
-            end
-        end)
     end
 end)
