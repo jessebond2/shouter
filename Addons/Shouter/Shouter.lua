@@ -47,10 +47,18 @@ function Shouter:InitializePanels()
         print("|cFF00FF00Shouter:|r Loading settings panel...")
         local CreateSettingsPanel = _G.ShouterCreateSettingsPanel
         if CreateSettingsPanel then
-            self.settingsPanel = CreateSettingsPanel()
-            if self.settingsPanel then
+            print("|cFF00FF00Shouter:|r Calling CreateSettingsPanel...")
+            local success, result = pcall(CreateSettingsPanel)
+            if success and result then
+                self.settingsPanel = result
                 print("|cFF00FF00Shouter:|r Settings panel loaded successfully!")
+            else
+                print("|cFF00FF00Shouter:|r Settings panel creation failed: " .. tostring(result))
+                -- Try creating a simple test panel
+                self:CreateSimpleSettingsPanel()
             end
+        else
+            print("|cFF00FF00Shouter:|r CreateSettingsPanel function not found!")
         end
     end
     
@@ -58,8 +66,9 @@ function Shouter:InitializePanels()
     if not self.debugPanel then
         local CreateDebugPanel = _G.ShouterCreateDebugPanel
         if CreateDebugPanel then
-            self.debugPanel = CreateDebugPanel()
-            if self.debugPanel then
+            local success, result = pcall(CreateDebugPanel)
+            if success and result then
+                self.debugPanel = result
                 print("|cFF00FF00Shouter:|r Debug panel loaded successfully!")
                 -- Hook debug functions
                 local HookDebugFunctions = _G.ShouterHookDebugFunctions
@@ -67,9 +76,76 @@ function Shouter:InitializePanels()
                     HookDebugFunctions()
                 end
                 self:DebugLog("Shouter addon loaded", "System")
+            else
+                print("|cFF00FF00Shouter:|r Debug panel creation failed: " .. tostring(result))
             end
+        else
+            print("|cFF00FF00Shouter:|r CreateDebugPanel function not found!")
         end
     end
+end
+
+function Shouter:CreateSimpleSettingsPanel()
+    print("|cFF00FF00Shouter:|r Creating simple settings panel...")
+    local panel = CreateFrame("Frame", "ShouterSimpleSettings", UIParent)
+    panel:SetSize(400, 300)
+    panel:SetPoint("CENTER")
+    panel:SetBackdrop({
+        bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+        edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+        tile = true, tileSize = 32, edgeSize = 32,
+        insets = { left = 11, right = 12, top = 12, bottom = 11 }
+    })
+    panel:SetFrameStrata("DIALOG")
+    panel:Hide()
+    
+    -- Title
+    local title = panel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
+    title:SetPoint("TOP", 0, -20)
+    title:SetText("Shouter Settings")
+    
+    -- Enable checkbox
+    local enableCheckbox = CreateFrame("CheckButton", nil, panel, "ChatConfigCheckButtonTemplate")
+    enableCheckbox:SetPoint("TOPLEFT", 20, -50)
+    enableCheckbox.Text:SetText("Enable Shouter")
+    enableCheckbox:SetChecked(self.db.enabled)
+    enableCheckbox:SetScript("OnClick", function(cb)
+        if cb:GetChecked() then
+            self:Enable()
+        else
+            self:Disable()
+        end
+    end)
+    
+    -- Message type buttons
+    local yellButton = CreateFrame("Button", nil, panel, "UIPanelButtonTemplate")
+    yellButton:SetPoint("TOPLEFT", enableCheckbox, "BOTTOMLEFT", 0, -30)
+    yellButton:SetSize(80, 22)
+    yellButton:SetText("Use YELL")
+    yellButton:SetScript("OnClick", function()
+        self.db.messageType = "YELL"
+        print("|cFF00FF00Shouter:|r Message type set to yell")
+    end)
+    
+    local sayButton = CreateFrame("Button", nil, panel, "UIPanelButtonTemplate")
+    sayButton:SetPoint("LEFT", yellButton, "RIGHT", 10, 0)
+    sayButton:SetSize(80, 22)
+    sayButton:SetText("Use SAY")
+    sayButton:SetScript("OnClick", function()
+        self.db.messageType = "SAY"
+        print("|cFF00FF00Shouter:|r Message type set to say")
+    end)
+    
+    -- Close button
+    local closeButton = CreateFrame("Button", nil, panel, "UIPanelButtonTemplate")
+    closeButton:SetPoint("BOTTOM", 0, 20)
+    closeButton:SetSize(80, 22)
+    closeButton:SetText("Close")
+    closeButton:SetScript("OnClick", function() panel:Hide() end)
+    
+    self.settingsPanel = panel
+    print("|cFF00FF00Shouter:|r Simple settings panel created!")
+    return panel
 end
 
 function Shouter:Enable()
