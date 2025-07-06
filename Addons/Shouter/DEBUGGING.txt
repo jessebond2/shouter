@@ -1,0 +1,47 @@
+DEBUGGING SHOUTER ADDON
+======================
+
+If the addon doesn't appear in your addon list:
+
+1. CHECK INSTALLATION PATH
+   Make sure the addon is installed in the correct location:
+   - The folder must be named exactly "Shouter" (case sensitive)
+   - Path should be: WoW/_classic_/Interface/AddOns/Shouter/
+   - Inside should be Shouter.toc and Shouter.lua
+
+2. INTERFACE VERSION
+   Current .toc uses Interface: 11503 (Classic Era 1.15.3)
+   
+   Other versions to try:
+   - Classic Era: 11502, 11503, 11504
+   - Classic Wrath: 30403
+   - Classic Cataclysm: 40400
+   
+   To check your version, type in-game:
+   /script print(GetBuildInfo())
+
+3. FILE ENCODING
+   The .toc file must be saved as:
+   - Plain text (not RTF or Word)
+   - UTF-8 without BOM
+   - Windows line endings (CRLF) preferred
+
+4. COMMON ISSUES
+   - Addon folder inside another folder (e.g., Shouter/Shouter/)
+   - .toc file has wrong name (must match folder name)
+   - Hidden file extensions (.toc.txt instead of .toc)
+   - Missing or extra spaces in .toc headers
+
+5. TEST IF ADDON LOADS
+   Type this in-game:
+   /script print(IsAddOnLoaded("Shouter"))
+   
+   If it prints "true", the addon loaded but may have errors.
+   If "false" or "nil", check installation.
+
+6. CHECK FOR ERRORS
+   Enable Lua errors:
+   /console scriptErrors 1
+   
+   Then reload:
+   /reload

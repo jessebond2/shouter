@@ -1,4 +1,4 @@
-## Interface: 11500
+## Interface: 11503
 ## Title: Shouter
 ## Notes: Yells when specified players get within a certain distance
 ## Author: Your Name
@@ -6,3 +6,5 @@
 ## SavedVariables: ShouterDB
 
 Shouter.lua
+Settings.lua
+Debug.lua

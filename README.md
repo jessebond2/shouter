@@ -11,7 +11,10 @@ Shouter is a WoW Classic addon that automatically yells when specified players g
 - Track specific player names
 - Configurable detection range (default: 30 yards)
 - Cooldown system to prevent spam (default: 60 seconds per player)
+- Choose between "yell" or "say" for messages
 - Simple slash commands for configuration
+- Settings panel with GUI controls
+- Debug panel for troubleshooting
 - Persistent settings saved between sessions
 
 ### Installation
@@ -21,6 +24,35 @@ Shouter is a WoW Classic addon that automatically yells when specified players g
    - Windows: `C:\Program Files (x86)\World of Warcraft\_classic_\Interface\AddOns\`
    - Mac: `/Applications/World of Warcraft/_classic_/Interface/AddOns/`
 3. Restart WoW or type `/reload` in-game
+
+### Troubleshooting
+
+If the addon doesn't appear in your addon list:
+
+1. **Verify Installation Path**
+   - Folder must be named exactly `Shouter` (case sensitive)
+   - Full path example: `C:\Program Files (x86)\World of Warcraft\_classic_\Interface\AddOns\Shouter\`
+   - Check there's no extra folder nesting (not `AddOns\Shouter\Shouter\`)
+
+2. **Check Your WoW Version**
+   - In-game, type: `/script print(GetBuildInfo())`
+   - Update the Interface number in Shouter.toc if needed:
+     - Classic Era: 11503
+     - Classic Wrath: 30403
+     - Classic Cataclysm: 40400
+
+3. **Enable Lua Errors**
+   ```
+   /console scriptErrors 1
+   /reload
+   ```
+
+4. **Test if Addon Loads**
+   ```
+   /script print(IsAddOnLoaded("Shouter"))
+   ```
+   - Should print "true" if loaded
+   - If "false", check installation path and .toc file
 
 ### Usage
 
@@ -32,9 +64,11 @@ Shouter is a WoW Classic addon that automatically yells when specified players g
 - `/shouter list` - List all tracked players
 - `/shouter range <number>` - Set detection range in yards (default: 30)
 - `/shouter cooldown <number>` - Set yell cooldown in seconds (default: 60)
+- `/shouter messagetype <yell|say>` - Set message type (yell or say)
 - `/shouter enable` - Enable the addon
 - `/shouter disable` - Disable the addon
 - `/shouter clear` - Remove all tracked players
+- `/shouter config` - Open the settings panel
 
 #### Examples
 
@@ -43,6 +77,7 @@ Shouter is a WoW Classic addon that automatically yells when specified players g
 /shouter add RareSpawnKiller
 /shouter range 40
 /shouter cooldown 30
+/shouter messagetype say
 ```
 
 ### How It Works

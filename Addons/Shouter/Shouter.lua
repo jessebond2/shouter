@@ -6,6 +6,7 @@ local defaults = {
     range = 30,
     players = {},
     cooldown = 60,
+    messageType = "YELL",
 }
 
 local lastYellTime = {}
@@ -96,9 +97,9 @@ function Shouter:IsPlayerTracked(name)
 end
 
 function Shouter:YellForPlayer(name, distance)
-    local message = string.format("%s is nearby! (%.1f yards away)", name, distance)
-    SendChatMessage(message, "YELL")
-    print("|cFF00FF00Shouter:|r " .. message)
+    local message = string.format("%s!", name)
+    SendChatMessage(message, self.db.messageType)
+    print("|cFF00FF00Shouter:|r " .. message .. "(%.1f yards away) (" .. string.lower(self.db.messageType) .. ")", distance)
 end
 
 function Shouter:AddPlayer(name)
@@ -154,6 +155,14 @@ function Shouter:RegisterSlashCommands()
         elseif command == "cooldown" and tonumber(arg) then
             self.db.cooldown = tonumber(arg)
             print("|cFF00FF00Shouter:|r Cooldown set to " .. self.db.cooldown .. " seconds")
+        elseif command == "messagetype" and arg ~= "" then
+            arg = arg:upper()
+            if arg == "YELL" or arg == "SAY" then
+                self.db.messageType = arg
+                print("|cFF00FF00Shouter:|r Message type set to " .. arg:lower())
+            else
+                print("|cFF00FF00Shouter:|r Invalid message type. Use 'yell' or 'say'")
+            end
         elseif command == "enable" then
             self:Enable()
         elseif command == "disable" then
@@ -161,6 +170,9 @@ function Shouter:RegisterSlashCommands()
         elseif command == "clear" then
             self.db.players = {}
             print("|cFF00FF00Shouter:|r Cleared all tracked players.")
+        elseif command == "config" or command == "settings" then
+            InterfaceOptionsFrame_OpenToCategory("Shouter")
+            InterfaceOptionsFrame_OpenToCategory("Shouter") -- Called twice to fix a Blizzard bug
         else
             print("|cFF00FF00Shouter|r Commands:")
             print("  /shouter add <name> - Add a player to track")
@@ -168,9 +180,11 @@ function Shouter:RegisterSlashCommands()
             print("  /shouter list - List all tracked players")
             print("  /shouter range <number> - Set detection range (default: 30 yards)")
             print("  /shouter cooldown <number> - Set yell cooldown (default: 60 seconds)")
+            print("  /shouter messagetype <yell|say> - Set message type")
             print("  /shouter enable - Enable the addon")
             print("  /shouter disable - Disable the addon")
             print("  /shouter clear - Remove all tracked players")
+            print("  /shouter config - Open settings panel")
         end
     end
 end
