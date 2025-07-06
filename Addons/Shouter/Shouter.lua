@@ -87,15 +87,17 @@ end
 
 function Shouter:CreateSimpleSettingsPanel()
     print("|cFF00FF00Shouter:|r Creating simple settings panel...")
-    local panel = CreateFrame("Frame", "ShouterSimpleSettings", UIParent)
+    local panel = CreateFrame("Frame", "ShouterSimpleSettings", UIParent, "BackdropTemplate")
     panel:SetSize(400, 300)
     panel:SetPoint("CENTER")
-    panel:SetBackdrop({
-        bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
-        edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
-        tile = true, tileSize = 32, edgeSize = 32,
-        insets = { left = 11, right = 12, top = 12, bottom = 11 }
-    })
+    if panel.SetBackdrop then
+        panel:SetBackdrop({
+            bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+            edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+            tile = true, tileSize = 32, edgeSize = 32,
+            insets = { left = 11, right = 12, top = 12, bottom = 11 }
+        })
+    end
     panel:SetFrameStrata("DIALOG")
     panel:Hide()
     

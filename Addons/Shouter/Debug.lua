@@ -117,15 +117,17 @@ function ShouterCreateDebugPanel()
     UIDropDownMenu_SetText(filterDropdown, "All")
     
     -- Log display
-    local logFrame = CreateFrame("Frame", nil, panel)
+    local logFrame = CreateFrame("Frame", nil, panel, "BackdropTemplate")
     logFrame:SetPoint("TOPLEFT", filterLabel, "BOTTOMLEFT", 0, -30)
     logFrame:SetPoint("BOTTOMRIGHT", panel, "BOTTOMRIGHT", -30, 30)
-    logFrame:SetBackdrop({
-        bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
-        edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
-        tile = true, tileSize = 32, edgeSize = 16,
-        insets = { left = 5, right = 5, top = 5, bottom = 5 }
-    })
+    if logFrame.SetBackdrop then
+        logFrame:SetBackdrop({
+            bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+            edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+            tile = true, tileSize = 32, edgeSize = 16,
+            insets = { left = 5, right = 5, top = 5, bottom = 5 }
+        })
+    end
     
     -- Scroll frame for log
     local scrollFrame = CreateFrame("ScrollFrame", "ShouterDebugScrollFrame", logFrame, "UIPanelScrollFrameTemplate")
@@ -173,16 +175,18 @@ function ShouterCreateDebugPanel()
     -- Export dialog
     function panel:ShowExportDialog()
         if not panel.exportDialog then
-            local dialog = CreateFrame("Frame", "ShouterExportDialog", UIParent)
+            local dialog = CreateFrame("Frame", "ShouterExportDialog", UIParent, "BackdropTemplate")
             dialog:SetSize(400, 300)
             dialog:SetPoint("CENTER")
             dialog:SetFrameStrata("DIALOG")
-            dialog:SetBackdrop({
-                bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
-                edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
-                tile = true, tileSize = 32, edgeSize = 32,
-                insets = { left = 11, right = 12, top = 12, bottom = 11 }
-            })
+            if dialog.SetBackdrop then
+                dialog:SetBackdrop({
+                    bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+                    edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+                    tile = true, tileSize = 32, edgeSize = 32,
+                    insets = { left = 11, right = 12, top = 12, bottom = 11 }
+                })
+            end
             
             local title = dialog:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
             title:SetPoint("TOP", 0, -20)
