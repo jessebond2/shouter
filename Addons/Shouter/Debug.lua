@@ -1,4 +1,5 @@
 local addonName, addon = ...
+local Shouter = addon
 
 -- Debug log storage
 Shouter.debugLog = {}
@@ -254,18 +255,25 @@ end
 -- Initialize debug panel after addon loads
 local debugFrame = CreateFrame("Frame")
 debugFrame:RegisterEvent("ADDON_LOADED")
-debugFrame:SetScript("OnEvent", function(self, event, ...)
-    if event == "ADDON_LOADED" and ... == addonName then
-        C_Timer.After(0, function()
+debugFrame:SetScript("OnEvent", function(self, event, loadedAddon)
+    if event == "ADDON_LOADED" and loadedAddon == addonName then
+        print("|cFFFF0000[Shouter Debug]|r Addon loaded event fired")
+        C_Timer.After(0.2, function()
+            print("|cFFFF0000[Shouter Debug]|r Attempting to create debug panel...")
             -- Restore debug state
-            if Shouter.db.debugEnabled ~= nil then
+            if Shouter.db and Shouter.db.debugEnabled ~= nil then
                 Shouter.debugEnabled = Shouter.db.debugEnabled
             end
             
-            Shouter.debugPanel = CreateDebugPanel()
-            HookDebugFunctions()
-            
-            Shouter:DebugLog("Shouter addon loaded", "System")
+            local panel = CreateDebugPanel()
+            if panel then
+                Shouter.debugPanel = panel
+                HookDebugFunctions()
+                print("|cFFFF0000[Shouter Debug]|r Debug panel created successfully!")
+                Shouter:DebugLog("Shouter addon loaded", "System")
+            else
+                print("|cFFFF0000[Shouter Debug]|r Debug panel creation failed!")
+            end
         end)
     end
 end)

@@ -1,5 +1,6 @@
 local addonName, addon = ...
 Shouter = addon
+_G.Shouter = addon  -- Make it globally accessible
 
 local defaults = {
     enabled = true,
